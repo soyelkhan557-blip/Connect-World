@@ -1,132 +1,147 @@
-import { auth, db, storage, messaging } from './firebase.js';
+import { auth, db, storage } from './firebase.js';
 import { 
-    RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { 
     doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, 
-    query, where, orderBy, serverTimestamp, limit 
+    query, where, orderBy, serverTimestamp, limit, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
+// --- Global Variables ---
 let currentUser = null;
 let currentChatId = null;
-let confirmationResult = null;
+let isSignUpMode = false;
+let peerConnection = null;
+let localStream = null;
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     initAuthListener();
+    setupAuthUI();
     setupNav();
-    setupMessaging();
 });
 
-// --- AUTHENTICATION ---
+// --- AUTHENTICATION LOGIC (Phone + Password) ---
+function setupAuthUI() {
+    const toggleBtn = document.getElementById('toggle-auth-btn');
+    const authTitle = document.getElementById('auth-title');
+    const authDesc = document.getElementById('auth-desc');
+    const confirmPass = document.getElementById('confirm-password');
+    const mainBtn = document.getElementById('auth-main-btn');
+
+    toggleBtn.onclick = () => {
+        isSignUpMode = !isSignUpMode;
+        if (isSignUpMode) {
+            authTitle.innerText = "Create Account";
+            authDesc.innerText = "Sign up with phone and password";
+            confirmPass.classList.remove('hidden');
+            mainBtn.innerText = "Sign Up";
+            toggleBtn.innerHTML = "Already have an account? <span>Login</span>";
+        } else {
+            authTitle.innerText = "Welcome Back";
+            authDesc.innerText = "Login to your account";
+            confirmPass.classList.add('hidden');
+            mainBtn.innerText = "Login";
+            toggleBtn.innerHTML = "Don't have an account? <span>Sign Up</span>";
+        }
+    };
+
+    mainBtn.onclick = handleAuth;
+}
+
+async function handleAuth() {
+    const phone = document.getElementById('phone-number').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+
+    if (!phone || !password) return alert("Fill all fields!");
+
+    // internal email creation (logic to bypass Firebase Email Auth)
+    const email = `${phone}@connect-world.com`;
+
+    try {
+        if (isSignUpMode) {
+            if (password !== confirmPassword) return alert("Passwords match error!");
+            if (password.length < 6) return alert("Password min 6 chars!");
+
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            await createUserData(userCredential.user, phone);
+        } else {
+            await signInWithEmailAndPassword(auth, email, password);
+        }
+    } catch (error) {
+        if (error.code === 'auth/email-already-in-use') alert("Account already exists!");
+        else if (error.code === 'auth/wrong-password') alert("Invalid password!");
+        else alert("Error: " + error.message);
+    }
+}
+
+async function createUserData(user, phone) {
+    await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        phoneNumber: phone,
+        name: "CW User",
+        username: "user_" + phone.slice(-4),
+        bio: "Available",
+        photoURL: "https://via.placeholder.com/150",
+        status: "online",
+        lastSeen: serverTimestamp()
+    });
+}
+
 function initAuthListener() {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
-            await checkUserProfile(user);
-            showScreen('app-screen');
-            loadSection('chats');
+            document.getElementById('auth-screen').classList.remove('active');
+            document.getElementById('app-screen').classList.add('active');
             updateOnlineStatus(true);
+            loadSection('chats');
         } else {
-            showScreen('auth-screen');
-            setupRecaptcha();
+            document.getElementById('app-screen').classList.remove('active');
+            document.getElementById('auth-screen').classList.add('active');
         }
         document.getElementById('splash-screen').classList.remove('active');
     });
 }
 
-function setupRecaptcha() {
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible'
-    });
-}
-
-document.getElementById('send-otp-btn').addEventListener('click', async () => {
-    const phone = document.getElementById('phone-number').value;
-    try {
-        confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
-        document.getElementById('phone-input-group').classList.add('hidden');
-        document.getElementById('otp-input-group').classList.remove('hidden');
-    } catch (error) {
-        alert("Error: " + error.message);
-    }
-});
-
-document.getElementById('verify-otp-btn').addEventListener('click', async () => {
-    const code = document.getElementById('otp-code').value;
-    try {
-        await confirmationResult.confirm(code);
-    } catch (error) {
-        alert("Invalid OTP");
-    }
-});
-
-async function checkUserProfile(user) {
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
-            uid: user.uid,
-            phoneNumber: user.phoneNumber,
-            name: "New User",
-            username: "user_" + Math.floor(Math.random() * 10000),
-            bio: "Hey there! I am using Connect World.",
-            photoURL: "https://via.placeholder.com/150",
-            status: "online",
-            lastSeen: serverTimestamp()
-        });
-    }
-}
-
-// --- NAVIGATION & ROUTING ---
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-}
-
+// --- CORE NAVIGATION ---
 function setupNav() {
     document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
+        item.onclick = () => {
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
             loadSection(item.dataset.section);
-        });
+        };
     });
 }
 
 function loadSection(section) {
     const main = document.getElementById('main-content');
-    const title = document.getElementById('page-title');
-    title.innerText = section.charAt(0).toUpperCase() + section.slice(1);
+    document.getElementById('page-title').innerText = section.toUpperCase();
+    main.innerHTML = '<div class="spinner"></div>';
 
-    switch(section) {
-        case 'chats': renderChatList(main); break;
-        case 'friends': renderFriends(main); break;
-        case 'stories': renderStories(main); break;
-        case 'calls': renderCallLogs(main); break;
-        case 'profile': renderProfile(main); break;
-    }
+    if (section === 'chats') renderChats(main);
+    else if (section === 'friends') renderFriends(main);
+    else if (section === 'stories') renderStories(main);
+    else if (section === 'calls') renderCalls(main);
+    else if (section === 'profile') renderProfile(main);
 }
 
-// --- CHAT LOGIC ---
-async function renderChatList(container) {
-    container.innerHTML = '<div class="loader"></div>';
-    const q = query(collection(db, `users/${currentUser.uid}/conversations`), orderBy("lastMessageTime", "desc"));
-    
-    onSnapshot(q, (snapshot) => {
-        container.innerHTML = '';
-        snapshot.forEach(doc => {
+// --- CHAT FEATURE ---
+async function renderChats(container) {
+    const q = query(collection(db, `users/${currentUser.uid}/conversations`), orderBy("lastTime", "desc"));
+    onSnapshot(q, (snap) => {
+        container.innerHTML = snap.empty ? '<p style="padding:20px;">No chats yet</p>' : '';
+        snap.forEach(doc => {
             const data = doc.data();
             const div = document.createElement('div');
             div.className = 'glass-card chat-item';
-            div.innerHTML = `
-                <img src="${data.photoURL}" class="avatar">
-                <div class="chat-info">
-                    <h4>${data.name}</h4>
-                    <p>${data.lastMessage}</p>
-                </div>
-                <small>${new Date(data.lastMessageTime?.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
-            `;
+            div.innerHTML = `<img src="${data.photoURL}" class="avatar"><div><h4>${data.name}</h4><p>${data.lastMsg}</p></div>`;
             div.onclick = () => openChat(data);
             container.appendChild(div);
         });
@@ -141,67 +156,72 @@ function openChat(user) {
     loadMessages(user.uid);
 }
 
-document.getElementById('close-chat').onclick = () => {
-    document.getElementById('chat-view').classList.remove('active');
+document.getElementById('send-msg-btn').onclick = async () => {
+    const input = document.getElementById('message-input');
+    const msg = input.value.trim();
+    if (!msg || !currentChatId) return;
+
+    const chatId = [currentUser.uid, currentChatId].sort().join('_');
+    await addDoc(collection(db, `chats/${chatId}/messages`), {
+        sender: currentUser.uid,
+        text: msg,
+        time: serverTimestamp(),
+        type: 'text'
+    });
+    input.value = '';
 };
 
 function loadMessages(otherUid) {
     const chatId = [currentUser.uid, otherUid].sort().join('_');
-    const q = query(collection(db, `messages/${chatId}/chat`), orderBy("timestamp", "asc"));
-    
-    onSnapshot(q, (snapshot) => {
+    const q = query(collection(db, `chats/${chatId}/messages`), orderBy("time", "asc"));
+    onSnapshot(q, (snap) => {
         const list = document.getElementById('message-list');
         list.innerHTML = '';
-        snapshot.forEach(doc => {
-            const msg = doc.data();
+        snap.forEach(d => {
+            const m = d.data();
             const div = document.createElement('div');
-            div.className = `message ${msg.senderId === currentUser.uid ? 'sent' : 'received'}`;
-            div.innerHTML = msg.type === 'text' ? msg.text : `<img src="${msg.fileUrl}" style="max-width:100%">`;
+            div.className = `message ${m.sender === currentUser.uid ? 'sent' : 'received'}`;
+            div.innerText = m.text;
             list.appendChild(div);
         });
         list.scrollTop = list.scrollHeight;
     });
 }
 
-document.getElementById('send-msg-btn').onclick = async () => {
-    const input = document.getElementById('message-input');
-    const text = input.value.trim();
-    if (!text || !currentChatId) return;
-
-    const chatId = [currentUser.uid, currentChatId].sort().join('_');
-    await addDoc(collection(db, `messages/${chatId}/chat`), {
-        senderId: currentUser.uid,
-        text: text,
-        type: 'text',
-        timestamp: serverTimestamp(),
-        seen: false
-    });
-    input.value = '';
-};
-
-// --- WEBRTC (VIDEO CALL) ---
-const pcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-let localStream, remoteStream, peerConnection;
-
+// --- WEBRTC CALL SYSTEM ---
 document.getElementById('start-video-call').onclick = async () => {
     document.getElementById('call-screen').classList.add('active');
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     document.getElementById('local-video').srcObject = localStream;
-
-    peerConnection = new RTCPeerConnection(pcConfig);
-    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-    peerConnection.ontrack = (event) => {
-        document.getElementById('remote-video').srcObject = event.streams[0];
-    };
-
-    // Signaling Logic (simplified for brevity)
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-    // Push offer to Firestore...
+    // WebRTC Signaling Logic (Firebase call collection integration)
 };
 
-// --- PROFILE & STATUS ---
+// --- STORY SYSTEM ---
+function renderStories(container) {
+    container.innerHTML = `
+        <div class="glass-card" style="padding:20px; text-align:center;">
+            <p>Share your moments</p>
+            <button class="auth-btn" style="padding:10px 20px; margin-top:10px;">Post Story</button>
+        </div>
+    `;
+}
+
+// --- PROFILE & SETTINGS ---
+function renderProfile(container) {
+    container.innerHTML = `
+        <div class="glass-card profile-card" style="text-align:center; padding:30px;">
+            <img src="${currentUser.photoURL || 'https://via.placeholder.com/150'}" style="width:100px; border-radius:50%;">
+            <h2 style="margin-top:15px;">CW User</h2>
+            <p>${currentUser.email.split('@')[0]}</p>
+            <button id="logout-btn" style="margin-top:20px; color:red; border:none; background:none; cursor:pointer;">Logout</button>
+        </div>
+    `;
+    document.getElementById('logout-btn').onclick = () => {
+        updateOnlineStatus(false).then(() => signOut(auth));
+    };
+}
+
+// --- STATUS TRACKING ---
 async function updateOnlineStatus(isOnline) {
     if (!currentUser) return;
     await updateDoc(doc(db, "users", currentUser.uid), {
@@ -210,34 +230,9 @@ async function updateOnlineStatus(isOnline) {
     });
 }
 
-window.onbeforeunload = () => updateOnlineStatus(false);
-
-function renderProfile(container) {
-    container.innerHTML = `
-        <div class="glass-card profile-section">
-            <img src="${currentUser.photoURL || 'https://via.placeholder.com/150'}" id="profile-pic-big">
-            <h2 id="display-name">${currentUser.displayName || 'Connect World User'}</h2>
-            <p>ID: ${currentUser.uid.substring(0,8)}</p>
-            <button class="glass-card" onclick="handleLogout()">Logout</button>
-        </div>
-    `;
-}
-
-window.handleLogout = () => {
-    updateOnlineStatus(false).then(() => signOut(auth));
+// UI Helpers
+document.getElementById('close-chat').onclick = () => document.getElementById('chat-view').classList.remove('active');
+document.getElementById('hangup-btn').onclick = () => {
+    if(localStream) localStream.getTracks().forEach(t => t.stop());
+    document.getElementById('call-screen').classList.remove('active');
 };
-
-// --- STORIES ---
-async function renderStories(container) {
-    container.innerHTML = '<div class="glass-card">Coming Soon: 24h Visual Stories</div>';
-}
-
-// --- PUSH NOTIFICATIONS ---
-async function setupMessaging() {
-    try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            // Get Token and save to Firestore user doc
-        }
-    } catch (e) { console.log(e); }
-}

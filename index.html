@@ -12,6 +12,7 @@
 </head>
 <body class="dark-theme">
 
+    <!-- Splash Screen -->
     <div id="splash-screen" class="screen active">
         <div class="loader-content">
             <div class="app-logo">CW</div>
@@ -20,21 +21,18 @@
         </div>
     </div>
 
-    <!-- Auth Screen (Updated for Phone + Password) -->
+    <!-- Updated Auth Screen -->
     <div id="auth-screen" class="screen">
-        <div class="glass-card">
+        <div class="glass-card auth-container">
             <h2 id="auth-title">Welcome Back</h2>
-            <p id="auth-desc">Login with your phone number</p>
-            
+            <p id="auth-desc">Login to your account</p>
             <div class="input-group">
-                <input type="tel" id="phone-number" placeholder="Phone Number">
+                <input type="tel" id="phone-number" placeholder="Phone Number (ex: 017...)">
                 <input type="password" id="password" placeholder="Password">
                 <input type="password" id="confirm-password" class="hidden" placeholder="Confirm Password">
-                
                 <button id="auth-main-btn">Login</button>
             </div>
-            
-            <p class="toggle-auth" id="toggle-auth-btn" style="margin-top:15px; cursor:pointer; color:var(--accent-color);">
+            <p class="toggle-auth" id="toggle-auth-btn" style="margin-top:20px; cursor:pointer; color:#0084ff;">
                 Don't have an account? <span>Sign Up</span>
             </p>
         </div>
@@ -45,7 +43,7 @@
         <header class="glass-header">
             <h2 id="page-title">Chats</h2>
             <div class="header-actions">
-                <i class="fas fa-search"></i>
+                <i class="fas fa-search" id="search-btn"></i>
                 <i class="fas fa-ellipsis-v"></i>
             </div>
         </header>
@@ -61,7 +59,7 @@
         </nav>
     </div>
 
-    <!-- Chat Overlay -->
+    <!-- Chat Interface -->
     <div id="chat-view" class="overlay-screen">
         <header class="glass-header">
             <i class="fas fa-arrow-left" id="close-chat"></i>
@@ -69,11 +67,26 @@
                 <img src="https://via.placeholder.com/40" id="chat-user-img">
                 <div><h4 id="chat-user-name">User</h4><small id="chat-user-status">Online</small></div>
             </div>
+            <div class="header-actions">
+                <i class="fas fa-video" id="start-video-call"></i>
+                <i class="fas fa-phone" id="start-voice-call"></i>
+            </div>
         </header>
         <div id="message-list"></div>
         <div class="chat-input-area">
+            <label for="file-input"><i class="fas fa-plus"></i></label>
+            <input type="file" id="file-input" hidden>
             <input type="text" id="message-input" placeholder="Type a message...">
             <button id="send-msg-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Video Call Screen -->
+    <div id="call-screen" class="overlay-screen">
+        <video id="remote-video" autoplay playsinline></video>
+        <video id="local-video" autoplay playsinline muted></video>
+        <div class="call-controls">
+            <button class="btn-hangup" id="hangup-btn"><i class="fas fa-phone-slash"></i></button>
         </div>
     </div>
 

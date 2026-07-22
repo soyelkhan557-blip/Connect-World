@@ -7,12 +7,7 @@
 <title>Connect World</title>
 
 <link rel="stylesheet" href="style.css">
-
 <link rel="manifest" href="manifest.json">
-
-<script type="module" src="firebase.js"></script>
-<script defer src="script.js"></script>
-
 </head>
 
 <body>
@@ -21,13 +16,11 @@
 
 <h1>🌍 Connect World</h1>
 
-<p>Global Messaging App</p>
-
-<input type="text" id="phone" placeholder="Enter Mobile Number">
+<input id="phone" type="text" placeholder="Enter Mobile Number">
 
 <button id="loginBtn">Login / Sign Up</button>
 
-<br><br>
+<hr>
 
 <button id="myIdBtn">My ID</button>
 
@@ -39,7 +32,20 @@
 
 <button id="profileBtn">Profile</button>
 
+<hr>
+
+<div id="friendList"></div>
+
+<div id="chatBox"></div>
+
+<input id="messageInput" type="text" placeholder="Type Message">
+
+<button id="sendBtn">Send</button>
+
 </div>
+
+<script type="module" src="firebase.js"></script>
+<script type="module" src="script.js"></script>
 
 </body>
 </html>

@@ -1,1 +1,21 @@
-
+{
+  "name": "Connect World",
+  "short_name": "CW",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0084ff",
+  "description": "Premium real-time messaging and calls.",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/0084ff/ffffff?text=CW",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/0084ff/ffffff?text=CW",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

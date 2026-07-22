@@ -1,93 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Connect World</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a1a1a">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="dark-theme">
+<body>
 
     <!-- Splash Screen -->
-    <div id="splash-screen" class="screen active">
-        <div class="loader-content">
-            <div class="app-logo">CW</div>
-            <h1>Connect World</h1>
-            <div class="spinner"></div>
-        </div>
+    <div id="splash-screen" class="screen active" style="justify-content:center; align-items:center;">
+        <h1 style="color:var(--accent); font-size:3rem;">CW</h1>
+        <p>Connecting the World...</p>
     </div>
 
-    <!-- Updated Auth Screen -->
+    <!-- Login/Signup Screen -->
     <div id="auth-screen" class="screen">
-        <div class="glass-card auth-container">
-            <h2 id="auth-title">Welcome Back</h2>
-            <p id="auth-desc">Login to your account</p>
-            <div class="input-group">
-                <input type="tel" id="phone-number" placeholder="Phone Number (ex: 017...)">
-                <input type="password" id="password" placeholder="Password">
-                <input type="password" id="confirm-password" class="hidden" placeholder="Confirm Password">
-                <button id="auth-main-btn">Login</button>
+        <div class="auth-container">
+            <div class="glass-card">
+                <h2 id="auth-title">Welcome</h2>
+                <p id="auth-desc">Login to your account</p>
+                <div class="input-group">
+                    <input type="tel" id="phone-number" placeholder="Phone Number">
+                    <input type="password" id="password" placeholder="Password">
+                    <input type="password" id="confirm-password" class="hidden" placeholder="Confirm Password">
+                    <button id="auth-main-btn">Login</button>
+                </div>
+                <p id="toggle-auth-btn" style="margin-top:20px; color:var(--accent); cursor:pointer;">
+                    Don't have an account? <b>Sign Up</b>
+                </p>
             </div>
-            <p class="toggle-auth" id="toggle-auth-btn" style="margin-top:20px; cursor:pointer; color:#0084ff;">
-                Don't have an account? <span>Sign Up</span>
-            </p>
         </div>
     </div>
 
-    <!-- Main App Screen -->
+    <!-- Main App -->
     <div id="app-screen" class="screen">
-        <header class="glass-header">
+        <header style="padding:20px; border-bottom: 1px solid var(--glass-border); display:flex; justify-content:space-between;">
             <h2 id="page-title">Chats</h2>
-            <div class="header-actions">
-                <i class="fas fa-search" id="search-btn"></i>
-                <i class="fas fa-ellipsis-v"></i>
-            </div>
+            <i class="fas fa-search"></i>
         </header>
 
-        <main id="main-content"></main>
+        <div id="main-content" style="flex:1; overflow-y:auto; padding-bottom:80px;">
+            <!-- Content will load here -->
+        </div>
 
         <nav class="bottom-nav">
-            <div class="nav-item active" data-section="chats"><i class="fas fa-comment-alt"></i><span>Chats</span></div>
-            <div class="nav-item" data-section="friends"><i class="fas fa-user-friends"></i><span>Friends</span></div>
-            <div class="nav-item" data-section="stories"><i class="fas fa-circle-notch"></i><span>Stories</span></div>
-            <div class="nav-item" data-section="calls"><i class="fas fa-phone-alt"></i><span>Calls</span></div>
-            <div class="nav-item" data-section="profile"><i class="fas fa-user-circle"></i><span>Profile</span></div>
+            <div class="nav-item active" data-section="chats"><i class="fas fa-comment"></i>Chats</div>
+            <div class="nav-item" data-section="friends"><i class="fas fa-users"></i>Friends</div>
+            <div class="nav-item" data-section="stories"><i class="fas fa-circle-notch"></i>Stories</div>
+            <div class="nav-item" data-section="profile"><i class="fas fa-user"></i>Profile</div>
         </nav>
-    </div>
-
-    <!-- Chat Interface -->
-    <div id="chat-view" class="overlay-screen">
-        <header class="glass-header">
-            <i class="fas fa-arrow-left" id="close-chat"></i>
-            <div class="user-info">
-                <img src="https://via.placeholder.com/40" id="chat-user-img">
-                <div><h4 id="chat-user-name">User</h4><small id="chat-user-status">Online</small></div>
-            </div>
-            <div class="header-actions">
-                <i class="fas fa-video" id="start-video-call"></i>
-                <i class="fas fa-phone" id="start-voice-call"></i>
-            </div>
-        </header>
-        <div id="message-list"></div>
-        <div class="chat-input-area">
-            <label for="file-input"><i class="fas fa-plus"></i></label>
-            <input type="file" id="file-input" hidden>
-            <input type="text" id="message-input" placeholder="Type a message...">
-            <button id="send-msg-btn"><i class="fas fa-paper-plane"></i></button>
-        </div>
-    </div>
-
-    <!-- Video Call Screen -->
-    <div id="call-screen" class="overlay-screen">
-        <video id="remote-video" autoplay playsinline></video>
-        <video id="local-video" autoplay playsinline muted></video>
-        <div class="call-controls">
-            <button class="btn-hangup" id="hangup-btn"><i class="fas fa-phone-slash"></i></button>
-        </div>
     </div>
 
     <script type="module" src="firebase.js"></script>

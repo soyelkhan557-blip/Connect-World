@@ -1,68 +1,52 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
-
 body{
-    background:linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb);
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+margin:0;
+padding:0;
+font-family:Arial,sans-serif;
+background:#101820;
+color:white;
 }
 
 .container{
-    width:95%;
-    max-width:420px;
-    background:rgba(255,255,255,.08);
-    backdrop-filter:blur(15px);
-    border-radius:20px;
-    padding:25px;
-    text-align:center;
-    box-shadow:0 0 30px rgba(0,0,0,.35);
+max-width:450px;
+margin:auto;
+padding:20px;
+text-align:center;
 }
 
 h1{
-    color:#fff;
-    font-size:32px;
-    margin-bottom:10px;
-}
-
-p{
-    color:#ddd;
-    margin-bottom:25px;
+color:#00e5ff;
 }
 
 input{
-    width:100%;
-    padding:15px;
-    border:none;
-    border-radius:12px;
-    margin-bottom:15px;
-    font-size:16px;
-    outline:none;
+width:95%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
+font-size:16px;
 }
 
 button{
-    width:100%;
-    padding:14px;
-    margin:7px 0;
-    border:none;
-    border-radius:12px;
-    background:#2563eb;
-    color:#fff;
-    font-size:17px;
-    font-weight:bold;
-    cursor:pointer;
-    transition:.3s;
+width:100%;
+padding:12px;
+margin:8px 0;
+border:none;
+border-radius:8px;
+background:#00b894;
+color:white;
+font-size:16px;
+cursor:pointer;
 }
 
 button:hover{
-    background:#1d4ed8;
+background:#019875;
 }
 
-button:active{
-    transform:scale(.98);
+#friendList,
+#chatBox{
+margin-top:20px;
+padding:10px;
+min-height:120px;
+background:#1f2937;
+border-radius:10px;
 }

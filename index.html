@@ -7,14 +7,11 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a1a">
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="dark-theme">
 
-    <!-- Splash Screen -->
     <div id="splash-screen" class="screen active">
         <div class="loader-content">
             <div class="app-logo">CW</div>
@@ -23,102 +20,63 @@
         </div>
     </div>
 
-    <!-- Auth Screen -->
+    <!-- Auth Screen (Updated for Phone + Password) -->
     <div id="auth-screen" class="screen">
         <div class="glass-card">
-            <h2>Welcome</h2>
-            <p>Login with your phone number</p>
-            <div id="recaptcha-container"></div>
-            <div class="input-group" id="phone-input-group">
-                <input type="tel" id="phone-number" placeholder="+1234567890">
-                <button id="send-otp-btn">Send OTP</button>
+            <h2 id="auth-title">Welcome Back</h2>
+            <p id="auth-desc">Login with your phone number</p>
+            
+            <div class="input-group">
+                <input type="tel" id="phone-number" placeholder="Phone Number">
+                <input type="password" id="password" placeholder="Password">
+                <input type="password" id="confirm-password" class="hidden" placeholder="Confirm Password">
+                
+                <button id="auth-main-btn">Login</button>
             </div>
-            <div class="input-group hidden" id="otp-input-group">
-                <input type="number" id="otp-code" placeholder="Enter 6-digit OTP">
-                <button id="verify-otp-btn">Verify</button>
-            </div>
+            
+            <p class="toggle-auth" id="toggle-auth-btn" style="margin-top:15px; cursor:pointer; color:var(--accent-color);">
+                Don't have an account? <span>Sign Up</span>
+            </p>
         </div>
     </div>
 
-    <!-- Main App -->
+    <!-- Main App Screen -->
     <div id="app-screen" class="screen">
-        <!-- Header -->
         <header class="glass-header">
             <h2 id="page-title">Chats</h2>
             <div class="header-actions">
-                <i class="fas fa-search" id="search-toggle"></i>
+                <i class="fas fa-search"></i>
                 <i class="fas fa-ellipsis-v"></i>
             </div>
         </header>
 
-        <!-- Dynamic Content Area -->
-        <main id="main-content">
-            <!-- Sections will be injected here (Chats, Friends, Stories, Calls, Profile) -->
-        </main>
+        <main id="main-content"></main>
 
-        <!-- Bottom Navigation -->
         <nav class="bottom-nav">
-            <div class="nav-item active" data-section="chats">
-                <i class="fas fa-comment-alt"></i>
-                <span>Chats</span>
-            </div>
-            <div class="nav-item" data-section="friends">
-                <i class="fas fa-user-friends"></i>
-                <span>Friends</span>
-            </div>
-            <div class="nav-item" data-section="stories">
-                <i class="fas fa-circle-notch"></i>
-                <span>Stories</span>
-            </div>
-            <div class="nav-item" data-section="calls">
-                <i class="fas fa-phone-alt"></i>
-                <span>Calls</span>
-            </div>
-            <div class="nav-item" data-section="profile">
-                <i class="fas fa-user-circle"></i>
-                <span>Profile</span>
-            </div>
+            <div class="nav-item active" data-section="chats"><i class="fas fa-comment-alt"></i><span>Chats</span></div>
+            <div class="nav-item" data-section="friends"><i class="fas fa-user-friends"></i><span>Friends</span></div>
+            <div class="nav-item" data-section="stories"><i class="fas fa-circle-notch"></i><span>Stories</span></div>
+            <div class="nav-item" data-section="calls"><i class="fas fa-phone-alt"></i><span>Calls</span></div>
+            <div class="nav-item" data-section="profile"><i class="fas fa-user-circle"></i><span>Profile</span></div>
         </nav>
     </div>
 
-    <!-- Chat Detail View (Overlay) -->
+    <!-- Chat Overlay -->
     <div id="chat-view" class="overlay-screen">
         <header class="glass-header">
             <i class="fas fa-arrow-left" id="close-chat"></i>
             <div class="user-info">
                 <img src="https://via.placeholder.com/40" id="chat-user-img">
-                <div>
-                    <h4 id="chat-user-name">Username</h4>
-                    <small id="chat-user-status">Online</small>
-                </div>
-            </div>
-            <div class="header-actions">
-                <i class="fas fa-video" id="start-video-call"></i>
-                <i class="fas fa-phone" id="start-voice-call"></i>
+                <div><h4 id="chat-user-name">User</h4><small id="chat-user-status">Online</small></div>
             </div>
         </header>
         <div id="message-list"></div>
-        <div class="typing-indicator hidden">Typing...</div>
         <div class="chat-input-area">
-            <label for="file-input"><i class="fas fa-plus"></i></label>
-            <input type="file" id="file-input" hidden accept="image/*,video/*,audio/*,.pdf,.doc">
             <input type="text" id="message-input" placeholder="Type a message...">
             <button id="send-msg-btn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <!-- Call Screen (WebRTC) -->
-    <div id="call-screen" class="overlay-screen">
-        <video id="remote-video" autoplay playsinline></video>
-        <video id="local-video" autoplay playsinline muted></video>
-        <div class="call-controls">
-            <button class="btn-mute"><i class="fas fa-microphone"></i></button>
-            <button class="btn-hangup"><i class="fas fa-phone-slash"></i></button>
-            <button class="btn-camera"><i class="fas fa-video"></i></button>
-        </div>
-    </div>
-
-    <!-- Firebase SDKs -->
     <script type="module" src="firebase.js"></script>
     <script type="module" src="script.js"></script>
 </body>
